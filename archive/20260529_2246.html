@@ -1,0 +1,105 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ClaudetraderCrypto · live crypto dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--cyan:#22d3ee;--violet:#a78bfa;--ink:#05070d;--card:rgba(18,24,42,.55);--line:rgba(120,150,210,.16)}
+*{box-sizing:border-box}
+body{margin:0;background:#05070d;color:#e8eefc;font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+ background-image:radial-gradient(circle at 15% -10%,rgba(34,211,238,.10),transparent 40%),radial-gradient(circle at 90% 0%,rgba(167,139,250,.10),transparent 38%),linear-gradient(rgba(120,150,210,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(120,150,210,.05) 1px,transparent 1px);
+ background-size:auto,auto,38px 38px,38px 38px;min-height:100vh}
+.mono,.mono *,.stat-v,.tbl td.r,.tbl td.mono,.cd{font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;font-variant-numeric:tabular-nums}
+.wrap{max-width:1080px;margin:0 auto;padding:26px 18px 70px}
+.title{font-size:30px;font-weight:800;letter-spacing:.5px;background:linear-gradient(92deg,var(--cyan),var(--violet));-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:0 0 40px rgba(34,211,238,.18)}
+.tagline{color:#9fb0cf;font-size:13px;margin-top:3px}
+.glass{background:var(--card);border:1px solid var(--line);border-radius:16px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.card{padding:16px 18px;margin:14px 0;box-shadow:0 8px 40px rgba(0,0,0,.35)}
+.card-h{font-size:12px;letter-spacing:2px;color:#8ea3c9;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.scanbar{margin:16px 0 6px;padding:14px 18px;display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;position:relative;overflow:hidden}
+.scanbar:before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(34,211,238,.07),transparent 60%);pointer-events:none}
+.scan-left{display:flex;align-items:center;gap:10px;font-size:14px}
+.scan-right{margin-left:auto;font-size:13px;color:#b9c6e6}
+.scan-slots{flex-basis:100%;font-size:11px;letter-spacing:1.5px;color:#6b7da0}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--cyan);box-shadow:0 0 0 0 rgba(34,211,238,.7);animation:pulse 1.8s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(34,211,238,.6)}70%{box-shadow:0 0 0 12px rgba(34,211,238,0)}100%{box-shadow:0 0 0 0 rgba(34,211,238,0)}}
+.live{color:var(--cyan);font-weight:800;letter-spacing:2px;font-size:13px}
+.sep{color:#46587c}
+.ago{color:#7c8aa5;font-size:12px}
+.cd{color:var(--violet)}
+.clocks{flex-basis:100%;font-size:12px;color:#8ea3c9;display:flex;gap:18px;flex-wrap:wrap;font-family:'JetBrains Mono',ui-monospace,monospace}
+.chip{border:1px solid;border-radius:20px;padding:3px 12px;font-size:12px;font-weight:700;letter-spacing:1px}
+.grid{display:grid;gap:12px}
+.stats{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.sub-stats{grid-template-columns:repeat(auto-fit,minmax(120px,1fr))}
+.stat{background:rgba(10,14,26,.5);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.stat.big{background:linear-gradient(160deg,rgba(34,211,238,.06),rgba(167,139,250,.05))}
+.stat-l{font-size:10.5px;letter-spacing:1.4px;color:#7c8aa5;text-transform:uppercase}
+.stat-v{font-size:22px;font-weight:700;margin-top:5px;text-shadow:0 0 22px rgba(34,211,238,.12)}
+.stat.big .stat-v{font-size:27px}
+.sub{font-size:12px;color:#8ea3c9;font-weight:500}
+.summary{margin-top:12px;color:#c4d0ec;font-size:13.5px;line-height:1.7;border-left:2px solid var(--cyan);padding-left:12px}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;color:#7c8aa5;font-size:10px;letter-spacing:1.2px;padding:8px 8px;border-bottom:1px solid var(--line)}
+.tbl td{padding:11px 8px;border-bottom:1px solid rgba(120,150,210,.08);vertical-align:top}
+.tbl td.r,.tbl th.r{text-align:right}.tbl td.c,.tbl th.c{text-align:center}
+.coin b{font-size:14px}.coin .okx{display:block;color:#6b7da0;font-size:10.5px;letter-spacing:.4px;margin-top:2px}
+.heat{border:1px solid;border-radius:8px;padding:2px 7px;font-size:11px;font-family:ui-monospace,monospace;white-space:nowrap}
+.fund{font-size:10.5px;color:#9fb0cf;letter-spacing:.4px}
+.act{font-weight:800;letter-spacing:.5px}
+.detail{color:#9fb0cf;font-size:12px;max-width:300px}
+.empty{color:#8ea3c9;font-size:13.5px;line-height:1.7}
+.feed-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(120,150,210,.08);font-size:13px;flex-wrap:wrap}
+.feed-row:last-child{border-bottom:none}
+.tag{border:1px solid;border-radius:7px;padding:2px 9px;font-size:11px;font-weight:800;letter-spacing:1px}
+.mv{color:#b9c6e6;font-family:ui-monospace,monospace;font-size:12px}
+.reason{color:#9fb0cf;font-size:12.5px}
+.foot{margin-top:26px;color:#5c6c8e;font-size:11.5px;text-align:center;line-height:1.8}
+a{color:var(--cyan)}
+</style></head>
+<body><div class="wrap">
+  <div class="title">◢ ClaudetraderCrypto</div>
+  <div class="tagline">Autonomous · self-improving · longs-only crypto portfolio — executed on OKX, powered by best-source-per-signal data. <b>Sample Scan</b> · 2026-05-29 22:45 SGT</div>
+  
+    <div class="scanbar glass" data-build="1780065978" data-next="2026-05-30T00:00:00+08:00">
+      <div class="scan-left">
+        <span class="dot"></span>
+        <span class="live">LIVE</span>
+        <span class="sep">/</span>
+        <span class="scan-last">Last scan <b>2026-05-29 22:46 SGT</b></span>
+        <span class="ago" id="ago"></span>
+      </div>
+      <div class="scan-right">
+        <span class="next">Next scan <b>00:00 SGT (Sat)</b> <span id="countdown" class="cd"></span></span>
+      </div>
+      <div class="scan-slots">SCAN CYCLE (SGT) · 00:00 · 04:00 · 08:00 · 12:00 · 16:00 · 20:00 · 24/7</div>
+      <div class="clocks" id="clocks"></div>
+    </div><div class="grid stats"><div class="stat big"><div class="stat-l">PORTFOLIO RETURN</div><div class="stat-v" style="color:#7c8aa5">0.00%</div></div><div class="stat big"><div class="stat-l">ALPHA vs BTC</div><div class="stat-v" style="color:#7c8aa5">0.00%</div></div><div class="stat"><div class="stat-l">BTC (benchmark)</div><div class="stat-v" style="color:#7c8aa5">0.00%</div></div><div class="stat"><div class="stat-l">REALIZED</div><div class="stat-v" style="color:#7c8aa5">0.00%</div></div><div class="stat"><div class="stat-l">UNREALIZED</div><div class="stat-v" style="color:#7c8aa5">0.00%</div></div><div class="stat"><div class="stat-l">USDT CASH</div><div class="stat-v" style="color:#22d3ee">100%</div></div><div class="stat"><div class="stat-l">POSITIONS</div><div class="stat-v" style="color:#a78bfa">0</div></div></div><div class="card glass"><div class="card-h">◇ MARKET CONTEXT <span class="chip" style="border-color:#fb718555;color:#fb7185;box-shadow:0 0 18px #fb718533">◆ BTC BEAR</span></div><div class="grid stats sub-stats"><div class="stat"><div class="stat-l">FEAR &amp;amp; GREED</div><div class="stat-v" style="color:#e8eefc"><span style="color:#fb7185">23</span> <span class="sub">Extreme Fear</span></div></div><div class="stat"><div class="stat-l">BTC PRICE</div><div class="stat-v" style="color:#e8eefc">$72,637</div></div><div class="stat"><div class="stat-l">BTC DOMINANCE</div><div class="stat-v" style="color:#e8eefc">57.5%</div></div><div class="stat"><div class="stat-l">ETH / BTC</div><div class="stat-v" style="color:#e8eefc">0.02734</div></div><div class="stat"><div class="stat-l">TOTAL MCAP</div><div class="stat-v" style="color:#e8eefc">$2,527B</div></div></div><div class="summary">BTC sub-EMA50/200 on 1D, Supertrend BEARISH. Extreme Fear (23). Dominance 57.5% = alts bleeding. Crowd still net-long (L/S 1.7-3.6) into weakness = fragile. No A+ longs clear the BTC-regime gate — holding 100% USDT.</div></div><div class="card glass"><div class="card-h">◇ HOLDINGS</div><div class="empty">100% USDT cash — awaiting an A/A+ setup that clears the BTC-regime gate. In crypto, sitting out a weak tape <b>is</b> the trade.</div></div><div class="card glass"><div class="card-h">◇ ACTIVITY (this scan)</div><div class="empty">No trades this scan — positions held. The dashboard still refreshed.</div></div><div class="card glass"><div class="card-h">◇ WEAKNESS WATCH <span class="sub">(informational · longs-only, no shorts)</span></div><div class="feed-row"><span class="tag" style="color:#fb7185;border-color:#fb718555">WEAK</span><b>SOL</b><span class="reason">FULL BEAR EMA stack 1D/4H, RSI 36, LAGGING BTC. Informational only — no short.</span></div></div><div class="card glass"><div class="card-h">◇ SELF-IMPROVING BRAIN</div><div class="grid stats sub-stats"><div class="stat"><div class="stat-l">DECIDED TRADES</div><div class="stat-v" style="color:#e8eefc">0</div></div><div class="stat"><div class="stat-l">WIN RATE</div><div class="stat-v" style="color:#e8eefc">—</div></div><div class="stat"><div class="stat-l">EXPECTANCY</div><div class="stat-v" style="color:#7c8aa5">—</div></div><div class="stat"><div class="stat-l">PROFIT FACTOR</div><div class="stat-v" style="color:#e8eefc">—</div></div><div class="stat"><div class="stat-l">MAX DRAWDOWN</div><div class="stat-v" style="color:#fb7185">0.00%</div></div></div><div class="summary">🧠 Seed run — no trades graded yet. Brain calibrates per-setup R:R from real forward outcomes as trades mature.</div></div>
+  <div class="summary" style="margin-top:14px">Inception pending first allocation. In a confirmed BTC Bear with Extreme Fear, cash is the position.</div>
+  <div class="foot">ClaudetraderCrypto is an autonomous paper portfolio for research/education — not financial advice.<br>
+  Data: Binance · CoinGecko · alternative.me · OKX (execution venue). 24/7 · 6 scans daily (SGT 00/04/08/12/16/20).</div>
+</div>
+<script>
+(function(){
+ function fmtAgo(s){if(s<60)return s+'s ago';var m=Math.floor(s/60);if(m<60)return m+'m ago';var h=Math.floor(m/60);return h+'h '+(m%60)+'m ago';}
+ var bar=document.querySelector('.scanbar');
+ var build=bar?parseInt(bar.dataset.build||'0',10):0;
+ var nextIso=bar?bar.dataset.next:'';
+ var nextT=nextIso?Date.parse(nextIso):0;
+ function tick(){
+   var now=Date.now()/1000;
+   var ago=document.getElementById('ago');
+   if(ago&&build){ago.textContent='· updated '+fmtAgo(Math.max(0,Math.floor(now-build)));}
+   var cd=document.getElementById('countdown');
+   if(cd&&nextT){var d=Math.floor((nextT-Date.now())/1000);if(d>0){var h=Math.floor(d/3600),m=Math.floor((d%3600)/60);cd.textContent='(in '+(h>0?h+'h ':'')+m+'m)';}else{cd.textContent='(due)';}}
+   var c=document.getElementById('clocks');
+   if(c){
+     function z(n){return (n<10?'0':'')+n;}
+     function clk(tz,label){try{var t=new Date().toLocaleTimeString('en-GB',{timeZone:tz,hour:'2-digit',minute:'2-digit'});return label+' '+t;}catch(e){return '';}}
+     c.innerHTML='<span>◷ SGT '+clk('Asia/Singapore','').trim()+'</span><span>◷ UTC '+clk('UTC','').trim()+'</span><span>◷ NY '+clk('America/New_York','').trim()+'</span>';
+   }
+ }
+ tick();setInterval(tick,1000);
+})();
+</script>
+</body></html>
